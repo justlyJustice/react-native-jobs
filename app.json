@@ -1,5 +1,9 @@
 {
   "expo": {
+    "splash": {
+      "backgroundColor": "#ffffff",
+      "resizeMode": "cover"
+    },
     "scheme": "acme",
     "web": {
       "bundler": "metro"
