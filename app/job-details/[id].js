@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   SafeAreaView,
+  Share,
   ScrollView,
   Text,
   View,
@@ -28,14 +29,68 @@ const JobDetails = () => {
   const params = useSearchParams();
   const router = useRouter();
 
-  const [refreshing, onRefreshing] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState(tabs[0]);
 
   const { data, isLoading, error, refetch } = useFetch("job-details", {
     job_id: params.id,
   });
 
-  const onRefresh = () => {};
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    refetch();
+    setRefreshing(false);
+  });
+
+  const handleShare = async () => {
+    try {
+      const result = await Share.share({
+        message: `Jobit | The best and most recommended app to find and apply for your dream jobs.\n\nJob Position: ${
+          data[0].job_title
+        }\nApply now: ${
+          data[0]?.job_google_link ?? "https://careers.google.com/jobs/results"
+        }`,
+      });
+
+      if (result.action === Share.sharedAction) {
+        if (result.activityType) {
+          // shared with activity type of result.activityType
+        } else {
+          // shared
+        }
+      } else if (result.action === Share.dismissedAction) {
+        // dismissed
+      }
+    } catch (error) {
+      Alert.alert(error.message);
+    }
+  };
+
+  const displayTabContent = () => {
+    switch (activeTab) {
+      case "Qualifications":
+        return (
+          <Specifics
+            points={data[0].job_highlights?.Qualifications ?? ["N/A"]}
+            title="Qualifications"
+          />
+        );
+        break;
+      case "About":
+        return (
+          <JobAbout info={data[0].job_description ?? "No data provided"} />
+        );
+      case "Responsibilities":
+        return (
+          <Specifics
+            points={data[0].job_highlights?.Responsibilities ?? ["N/A"]}
+            title="Responsibilities"
+          />
+        );
+      default:
+        break;
+    }
+  };
 
   return (
     <SafeAreaView style={{ backgroundColor: COLORS.lightWhite, flex: 1 }}>
@@ -57,7 +112,7 @@ const JobDetails = () => {
             <ScreenHeaderBtn
               dimension="60%"
               iconUrl={icons.share}
-              handlePress={() => router.back()}
+              handlePress={() => handleShare()}
             />
           ),
           headerTitle: "",
@@ -91,9 +146,18 @@ const JobDetails = () => {
                 setActiveTab={setActiveTab}
                 tabs={tabs}
               />
+
+              {displayTabContent()}
             </View>
           )}
         </ScrollView>
+
+        <JobFooter
+          url={
+            data[0]?.job_google_link ??
+            "https://careers.google.com/jobs/results"
+          }
+        />
       </>
     </SafeAreaView>
   );

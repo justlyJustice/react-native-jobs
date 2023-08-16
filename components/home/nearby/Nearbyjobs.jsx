@@ -11,7 +11,7 @@ import { COLORS } from "../../../constants";
 const Nearbyjobs = () => {
   const router = useRouter();
   const { data, isLoading, error } = useFetch("search", {
-    query: "Python developer",
+    query: "React developer",
     num_pages: 1,
   });
 
